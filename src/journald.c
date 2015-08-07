@@ -30,19 +30,12 @@ enum EventdJournaldJournals {
     EVENTD_JOURNALD_JOURNAL_SYSTEM = 0x1,
     EVENTD_JOURNALD_JOURNAL_USER   = 0x2
 };
-#define eventd_journald_journals(call) \
-    call("system", EVENTD_JOURNALD_JOURNAL_SYSTEM) \
-    call("user", EVENTD_JOURNALD_JOURNAL_USER)
 
 enum EventdJournaldEvents {
     EVENTD_JOURNALD_EVENT_START = 0x1,
     EVENTD_JOURNALD_EVENT_STOP  = 0x2,
     EVENTD_JOURNALD_EVENT_ERROR = 0x4
 };
-#define eventd_journald_events(call) \
-    call("start", EVENTD_JOURNALD_EVENT_START) \
-    call("stop", EVENTD_JOURNALD_EVENT_STOP) \
-    call("error", EVENTD_JOURNALD_EVENT_ERROR)
 
 struct _EventdPluginContext {
     EventdCoreContext *core;
@@ -131,6 +124,10 @@ _eventd_journald_global_parse(EventdPluginContext *context, GKeyFile *config_fil
 
             if (FALSE) {}
 
+#define eventd_journald_journals(call)             \
+    call("system", EVENTD_JOURNALD_JOURNAL_SYSTEM) \
+    call("user", EVENTD_JOURNALD_JOURNAL_USER)
+
 #define check_journal(name, flag)             \
     else if (!g_strcmp0(name, *journal_iter)) \
         context->journals |= flag;
@@ -160,6 +157,11 @@ _eventd_journald_global_parse(EventdPluginContext *context, GKeyFile *config_fil
         while (*event_iter) {
 
             if (FALSE) {}
+
+#define eventd_journald_events(call)           \
+    call("start", EVENTD_JOURNALD_EVENT_START) \
+    call("stop", EVENTD_JOURNALD_EVENT_STOP)   \
+    call("error", EVENTD_JOURNALD_EVENT_ERROR)
 
 #define check_event(name, flag)             \
     else if (!g_strcmp0(name, *event_iter)) \
