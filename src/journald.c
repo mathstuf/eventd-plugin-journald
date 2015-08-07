@@ -67,8 +67,6 @@ _eventd_journald_init(EventdCoreContext *core, EventdCoreInterface *core_interfa
 static void
 _eventd_journald_uninit(EventdPluginContext *context)
 {
-    sd_journal_close(context->journal);
-
     g_free(context);
 }
 
