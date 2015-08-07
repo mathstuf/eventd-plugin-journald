@@ -19,6 +19,7 @@
 
 #include <glib.h>
 #include <glib-object.h>
+#include <glib-unix.h>
 
 #include <libeventd-config.h>
 #include <libeventd-event.h>
@@ -45,7 +46,9 @@ struct _EventdPluginContext {
     guint64 journals;
     guint64 events;
 
+    gboolean ok;
     sd_journal *journal;
+    GSource *source;
 };
 
 static EventdPluginContext *
@@ -69,11 +72,42 @@ _eventd_journald_uninit(EventdPluginContext *context)
     g_free(context);
 }
 
+static gboolean
+_eventd_journald_new_entry(EventdPluginContext *context)
+{
+    if (!context->ok)
+        return G_SOURCE_REMOVE;
+
+    for (;;) {
+        int i;
+        int ret = sd_journal_next(context->journal);
+
+        if (!ret)
+            break;
+        if (ret < 0) {
+            g_error("failed to seek within the journal: %s", g_strerror(-ret));
+            context->ok = FALSE;
+        }
+
+        for (i = 0; i < ret; ++i) {
+            const void *data;
+            size_t length;
+
+            /* TODO: parse the data out */
+            /* TODO: make an event */
+        }
+    }
+
+    return G_SOURCE_CONTINUE;
+}
+
 static void
 _eventd_journald_start(EventdPluginContext *context)
 {
     int journal_flags = 0;
     int ret;
+    int fd;
+    int events;
 
     if (!context->journals || !context->events)
         return;
@@ -87,10 +121,30 @@ _eventd_journald_start(EventdPluginContext *context)
 
     ret = sd_journal_open(&context->journal, journal_flags);
     if (ret < 0) {
-        g_error ("failed to open the journal: %s", g_strerror(-ret));
+        g_error("failed to open the journal: %s", g_strerror(-ret));
         return;
     }
-    sd_journal_seek_tail(context->journal);
+    ret = sd_journal_seek_tail(context->journal);
+    if (ret < 0) {
+        g_error("failed to seek to the end of the journal: %s", g_strerror(-ret));
+        return;
+    }
+
+    fd = sd_journal_get_fd(context->journal);
+    if (fd < 0) {
+        g_error("failed to get a file descriptor for the journal: %s", g_strerror(-fd));
+        return;
+    }
+    events = sd_journal_get_events(context->journal);
+    if (events < 0) {
+        g_error("failed to get events for the journal: %s", g_strerror(-events));
+        return;
+    }
+
+    context->ok = TRUE;
+
+    context->source = g_unix_fd_source_new(fd, events);
+    g_source_set_callback(context->source, (GSourceFunc)_eventd_journald_new_entry, context, NULL);
 }
 
 static void
@@ -98,6 +152,9 @@ _eventd_journald_stop(EventdPluginContext *context)
 {
     sd_journal_close(context->journal);
     context->journal = NULL;
+
+    g_source_unref(context->source);
+    context->source = NULL;
 }
 
 static void
@@ -201,6 +258,4 @@ eventd_plugin_get_interface(EventdPluginInterface *interface)
     libeventd_plugin_interface_add_stop_callback(interface, _eventd_journald_stop);
 
     libeventd_plugin_interface_add_global_parse_callback(interface, _eventd_journald_global_parse);
-    /*libeventd_plugin_interface_add_event_parse_callback(interface, _eventd_journald_event_parse);*/
-    /*libeventd_plugin_interface_add_config_reset_callback(interface, _eventd_journald_config_reset);*/
 }
