@@ -87,6 +87,7 @@ _eventd_journald_new_entry(EventdPluginContext *context)
         if (ret < 0) {
             g_error("failed to seek within the journal: %s", g_strerror(-ret));
             context->ok = FALSE;
+            return G_SOURCE_REMOVE;
         }
 
         for (i = 0; i < ret; ++i) {
