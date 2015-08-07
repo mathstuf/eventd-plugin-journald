@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.1)
 
 set(project "eventd-plugin-journald")
-project("${project}" NONE)
+project("${project}" C)
 
 set("${project}_version_major" 0)
 set("${project}_version_minor" 1)
@@ -12,3 +12,4 @@ set(CMAKE_C_FLAGS
     "${CMAKE_C_FLAGS} -fvisibility=hidden")
 
 add_subdirectory(man)
+add_subdirectory(src)
