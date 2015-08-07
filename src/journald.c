@@ -149,6 +149,8 @@ _eventd_journald_start(EventdPluginContext *context)
 static void
 _eventd_journald_stop(EventdPluginContext *context)
 {
+    context->ok = FALSE;
+
     sd_journal_close(context->journal);
     context->journal = NULL;
 
