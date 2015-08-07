@@ -162,8 +162,8 @@ static void
 _eventd_journald_global_parse(EventdPluginContext *context, GKeyFile *config_file)
 {
     gboolean local_only;
-    gchar *journals_conf;
-    gchar *events_conf;
+    gchar **journals;
+    gchar **events;
 
     if (!g_key_file_has_group(config_file, "Journald"))
         return;
@@ -174,8 +174,7 @@ _eventd_journald_global_parse(EventdPluginContext *context, GKeyFile *config_fil
         context->local_only = TRUE;
     }
 
-    if (libeventd_config_key_file_get_string(config_file, "Journald", "Journals", &journals_conf) < 0) {
-        gchar **journals = g_strsplit(journals_conf, ",", 0);
+    if (libeventd_config_key_file_get_string_list(config_file, "Journald", "Journals", &journals, NULL) < 0) {
         gchar **journal_iter = journals;
 
         while (*journal_iter) {
@@ -197,19 +196,16 @@ _eventd_journald_global_parse(EventdPluginContext *context, GKeyFile *config_fil
             else
                 g_warning("unknown journal '%s'", *journal_iter);
         }
-
-        g_strfreev(journals);
     } else {
         context->journals = EVENTD_JOURNALD_JOURNAL_SYSTEM
                           | EVENTD_JOURNALD_JOURNAL_USER;
     }
-    g_free(journals_conf);
+    g_strfreev(journals);
 
     if (!context->journals)
         g_warning("not watching any journals");
 
-    if (libeventd_config_key_file_get_string(config_file, "Journald", "Events", &events_conf) < 0) {
-        gchar **events = g_strsplit(events_conf, ",", 0);
+    if (libeventd_config_key_file_get_string_list(config_file, "Journald", "Events", &events, NULL) < 0) {
         gchar **event_iter = events;
 
         while (*event_iter) {
@@ -232,14 +228,12 @@ _eventd_journald_global_parse(EventdPluginContext *context, GKeyFile *config_fil
             else
                 g_warning("unknown event '%s'", *event_iter);
         }
-
-        g_strfreev(events);
     } else {
         context->events = EVENTD_JOURNALD_EVENT_START
                         | EVENTD_JOURNALD_EVENT_STOP
                         | EVENTD_JOURNALD_EVENT_ERROR;
     }
-    g_free(events_conf);
+    g_strfreev(events);
 
     if (!context->journals)
         g_warning("not watching any events");
