@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % config SYSTEM "config.ent">
+%config;
+]>
+
+<!--
+  eventd - Small daemon to act on remote or local events
+
+  Copyright © 2011-2012 Quentin "Sardem FF7" Glidic
+
+  This file is part of eventd.
+
+  eventd is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  eventd is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with eventd. If not, see <http://www.gnu.org/licenses/>.
+-->
+<refentry>
+    <refentryinfo id="refentryinfo">
+        <title>&PACKAGE_NAME; Manual</title>
+        <productname>&PACKAGE_NAME;</productname>
+        <productnumber>&PACKAGE_VERSION;</productnumber>
+
+        <authorgroup>
+            <author>
+                <contrib>Developer</contrib>
+                <firstname>Ben</firstname>
+                <surname>Boeckel</surname>
+                <email>mathstuf@gmail.com</email>
+            </author>
+        </authorgroup>
+    </refentryinfo>
+
+    <refsect1 id="see-also">
+        <title>See Also</title>
+
+        <variablelist>
+            <varlistentry>
+                <term><command>eventd</command> core man pages</term>
+                <listitem>
+                    <variablelist>
+                        <varlistentry>
+                            <term><citerefentry><refentrytitle>eventd</refentrytitle><manvolnum>1</manvolnum></citerefentry></term>
+                            <listitem>
+                                <para><command>eventd</command> daemon command-line options</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term><citerefentry><refentrytitle>eventd.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry></term>
+                            <listitem>
+                                <para>Main eventd configuration file</para>
+                                <para>Contains information about configuration key types</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term><citerefentry><refentrytitle>eventd.event</refentrytitle><manvolnum>5</manvolnum></citerefentry></term>
+                            <listitem>
+                                <para>Event definition and global configuration</para>
+                            </listitem>
+                        </varlistentry>
+                    </variablelist>
+                </listitem>
+            </varlistentry>
+        </variablelist>
+    </refsect1>
+</refentry>

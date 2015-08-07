@@ -1,0 +1,94 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % config SYSTEM "config.ent">
+%config;
+]>
+
+<!--
+  eventd-plugin-journald - Collect events from systemd's journal
+
+  Copyright 2015 Ben Boeckel
+
+  This program is free software: you can redistribute it and/or modify it
+  under the terms of the GNU Lesser General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or (at your
+  option) any later version.
+
+  This program is distributed in the hope that it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+  for more details.
+
+  You should have received a copy of the GNU Lesser General Public License
+  along with this program. If not, see http://www.gnu.org/licenses/.
+-->
+
+<refentry xmlns:xi="http://www.w3.org/2001/XInclude"
+    id="eventd-journald.conf">
+    <xi:include href="common-man.xml" xpointer="refentryinfo" />
+
+    <refmeta>
+        <refentrytitle>eventd-journald.conf</refentrytitle>
+        <manvolnum>5</manvolnum>
+    </refmeta>
+
+    <refnamediv>
+        <refname>eventd-journald.conf</refname>
+        <refpurpose>journald plugin main configuration file</refpurpose>
+    </refnamediv>
+
+    <refsynopsisdiv>
+        <para>
+            Global configuration for the journald plugin.
+        </para>
+    </refsynopsisdiv>
+
+    <refsect1 id="description">
+        <title>Description</title>
+
+        <para>
+            It controls the journald collection behavior.
+        </para>
+    </refsect1>
+
+    <refsect1 id="sections">
+        <title>Sections</title>
+
+        <refsect2>
+            <title>Section <varname>[Journald]</varname></title>
+
+            <variablelist>
+                <varlistentry>
+                    <term><varname>Journals=</varname> (defaults to <literal>"system,user"</literal>)</term>
+                    <listitem>
+                        <para>A <type>string</type></para>
+                        <para>A comma-separated list of journals to watch. The supported journals:</para>
+                        <para><literal>"system"</literal>: watch system events</para>
+                        <para><literal>"user"</literal>: watch user events</para>
+                    </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                    <term><varname>LocalOnly=</varname> (defaults to <literal>true</literal>)</term>
+                    <listitem>
+                        <para>A <type>boolean</type></para>
+                        <para>If <literal>true</literal>, only local logs will be read.</para>
+                    </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                    <term><varname>Events=</varname> (defaults to <literal>"start,stop,error"</literal>)</term>
+                    <listitem>
+                        <para>A <type>string</type></para>
+                        <para>A comma-separated string of events to dispatch on. The supported events:</para>
+                        <para><literal>"start"</literal>: unit start events</para>
+                        <para><literal>"stop"</literal>: unit stop events</para>
+                        <para><literal>"error"</literal>: error messages</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </refsect2>
+    </refsect1>
+
+    <xi:include href="common-man.xml" xpointer="see-also" />
+</refentry>
