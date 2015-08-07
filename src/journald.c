@@ -83,7 +83,7 @@ _eventd_journald_new_entry(EventdPluginContext *context)
         if (!ret)
             break;
         if (ret < 0) {
-            g_error("failed to seek within the journal: %s", g_strerror(-ret));
+            g_warning("failed to seek within the journal: %s", g_strerror(-ret));
             context->ok = FALSE;
             return G_SOURCE_REMOVE;
         }
@@ -120,23 +120,23 @@ _eventd_journald_start(EventdPluginContext *context)
 
     ret = sd_journal_open(&context->journal, journal_flags);
     if (ret < 0) {
-        g_error("failed to open the journal: %s", g_strerror(-ret));
+        g_warning("failed to open the journal: %s", g_strerror(-ret));
         return;
     }
     ret = sd_journal_seek_tail(context->journal);
     if (ret < 0) {
-        g_error("failed to seek to the end of the journal: %s", g_strerror(-ret));
+        g_warning("failed to seek to the end of the journal: %s", g_strerror(-ret));
         return;
     }
 
     fd = sd_journal_get_fd(context->journal);
     if (fd < 0) {
-        g_error("failed to get a file descriptor for the journal: %s", g_strerror(-fd));
+        g_warning("failed to get a file descriptor for the journal: %s", g_strerror(-fd));
         return;
     }
     events = sd_journal_get_events(context->journal);
     if (events < 0) {
-        g_error("failed to get events for the journal: %s", g_strerror(-events));
+        g_warning("failed to get events for the journal: %s", g_strerror(-events));
         return;
     }
 
