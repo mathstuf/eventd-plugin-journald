@@ -8,3 +8,8 @@ include_directories(SYSTEM
 
 add_library(journald MODULE
     journald.c)
+
+install(
+    TARGETS     journald
+    DESTINATION lib${LIB_SUFFIX}/eventd
+    COMPONENT   runtime)
