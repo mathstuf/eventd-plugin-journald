@@ -275,9 +275,9 @@ _eventd_journald_stop(EventdPluginContext *context)
 static void
 _eventd_journald_global_parse(EventdPluginContext *context, GKeyFile *config_file)
 {
-    gboolean local_only;
-    gchar **journals;
-    gchar **events;
+    gboolean local_only = TRUE;
+    gchar **journals = NULL;
+    gchar **events = NULL;
 
     if (!g_key_file_has_group(config_file, "Journald"))
         return;
@@ -315,6 +315,7 @@ _eventd_journald_global_parse(EventdPluginContext *context, GKeyFile *config_fil
                           | EVENTD_JOURNALD_JOURNAL_USER;
     }
     g_strfreev(journals);
+    journals = NULL;
 
     if (!context->journals)
         g_warning("not watching any journals");
@@ -346,6 +347,7 @@ _eventd_journald_global_parse(EventdPluginContext *context, GKeyFile *config_fil
                         | EVENTD_JOURNALD_EVENT_ERROR;
     }
     g_strfreev(events);
+    events = NULL;
 
     if (!context->journals)
         g_warning("not watching any events");
