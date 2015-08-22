@@ -27,6 +27,10 @@
 
 #include <systemd/sd-journal.h>
 
+#include <syslog.h>
+
+#include <assert.h>
+
 enum EventdJournaldJournals {
     EVENTD_JOURNALD_JOURNAL_SYSTEM = 0x1,
     EVENTD_JOURNALD_JOURNAL_USER   = 0x2
@@ -40,6 +44,8 @@ enum EventdJournaldEvents {
 struct _EventdPluginContext {
     EventdCoreContext *core;
     EventdCoreInterface *core_interface;
+
+    gchar *uid;
 
     gboolean local_only;
     guint64 journals;
@@ -57,6 +63,8 @@ _eventd_journald_init(EventdCoreContext *core, EventdCoreInterface *core_interfa
 
     context = g_new0(EventdPluginContext, 1);
 
+    context->uid = g_strdup_printf("%u", getuid());
+
     context->core = core;
     context->core_interface= core_interface;
 
@@ -66,6 +74,8 @@ _eventd_journald_init(EventdCoreContext *core, EventdCoreInterface *core_interfa
 static void
 _eventd_journald_uninit(EventdPluginContext *context)
 {
+    g_free(context->uid);
+
     g_free(context);
 }
 
@@ -75,9 +85,28 @@ _eventd_journald_new_entry(EventdPluginContext *context)
     if (!context->ok)
         return G_SOURCE_REMOVE;
 
+#define vars(call)    \
+    call(priority);   \
+    call(comm);       \
+    call(uid);        \
+    call(message);    \
+    call(message_id); \
+    call(hostname);   \
+    call(unit);       \
+    call(result);     \
+    call(_dummy)
+
+#define declare(var) \
+    gchar *var = NULL
+    vars(declare);
+#undef declare
+
     for (;;) {
         int i;
         int ret = sd_journal_next(context->journal);
+        const void *data;
+        size_t length;
+        guint64 make_event = 0;
 
         if (!ret)
             break;
@@ -87,14 +116,75 @@ _eventd_journald_new_entry(EventdPluginContext *context)
             return G_SOURCE_REMOVE;
         }
 
-        for (i = 0; i < ret; ++i) {
-            const void *data;
-            size_t length;
-
-            /* TODO: parse the data out */
-            /* TODO: make an event */
-        }
+#define sd_read_field(field, var, req)                                  \
+    ret = sd_journal_get_data(context->journal, field, &data, &length); \
+    if (!ret) {                                                         \
+        var = g_malloc0((length + 1) * sizeof(gchar));                  \
+        memcpy(var, data, length);                                      \
+    } else if (ret == -ENOENT && !req) {                                \
+        var = NULL;                                                     \
+    } else {                                                            \
+        break;                                                          \
     }
+
+        sd_read_field("PRIORITY", priority, TRUE);
+        int prio = *priority - '0';
+        if ((prio <= LOG_ERR) && (context->events & EVENTD_JOURNALD_EVENT_ERROR)) {
+            make_event = EVENTD_JOURNALD_EVENT_ERROR;
+        } else {
+            sd_read_field("_COMM", comm, TRUE);
+            if (g_strcmp0(comm, "systemd")) {
+                break;
+            }
+
+            sd_read_field("_UID", uid, TRUE);
+            if ((!g_strcmp0(uid, "0") && (context->journals & EVENTD_JOURNALD_JOURNAL_SYSTEM)) ||
+                (!g_strcmp0(uid, context->uid) && (context->journals & EVENTD_JOURNALD_JOURNAL_USER))) {
+                make_event = EVENTD_JOURNALD_EVENT_UNIT;
+            }
+        }
+
+        if (!make_event) {
+            break;
+        }
+
+        sd_read_field("MESSAGE", message, TRUE);
+        sd_read_field("MESSAGE_ID", message_id, TRUE);
+
+        if (!context->local_only) {
+            sd_read_field("_HOSTNAME", hostname, TRUE);
+        }
+
+        /* TODO: make the event. */
+
+        switch (make_event) {
+            case EVENTD_JOURNALD_EVENT_ERROR:
+                sd_read_field("_SYSTEMD_USER_UNIT", unit, FALSE);
+                if (!unit) {
+                    sd_read_field("_SYSTEMD_UNIT", unit, FALSE);
+                }
+
+                break;
+            case EVENTD_JOURNALD_EVENT_UNIT:
+                sd_read_field("USER_UNIT", unit, TRUE);
+                sd_read_field("RESULT", result, TRUE);
+
+                break;
+            default:
+                assert(0);
+                break;
+        }
+
+        /* TODO: send the event. */
+
+#define safe_free(var) \
+    g_free(var);       \
+    var = NULL
+        vars(safe_free);
+#undef safe_free
+    }
+
+    vars(g_free);
 
     return G_SOURCE_CONTINUE;
 }
