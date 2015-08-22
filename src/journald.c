@@ -104,7 +104,6 @@ _eventd_journald_new_entry(EventdPluginContext *context)
     EventdEvent *event = NULL;
 
     for (;;) {
-        int i;
         int ret = sd_journal_next(context->journal);
         const char *kind;
         const void *data;
@@ -197,7 +196,7 @@ _eventd_journald_new_entry(EventdPluginContext *context)
                 assert(0);
                 continue;
             default:
-                g_warning("unimplemented event handler: %d", make_event);
+                g_warning("unimplemented event handler: %" G_GUINT64_FORMAT, make_event);
                 continue;
         }
 
