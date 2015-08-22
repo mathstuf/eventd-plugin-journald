@@ -283,12 +283,14 @@ _eventd_journald_global_parse(EventdPluginContext *context, GKeyFile *config_fil
         return;
 
     if (libeventd_config_key_file_get_boolean(config_file, "Journald", "LocalOnly", &local_only) < 0) {
-        context->local_only = local_only;
-    } else {
         context->local_only = TRUE;
+    } else {
+        context->local_only = local_only;
     }
 
-    if (libeventd_config_key_file_get_string_list(config_file, "Journald", "Journals", &journals, NULL) < 0) {
+    libeventd_config_key_file_get_string_list(config_file, "Journald", "Journals", &journals, NULL);
+
+    if (journals) {
         gchar **journal_iter = journals;
 
         while (*journal_iter) {
@@ -320,7 +322,9 @@ _eventd_journald_global_parse(EventdPluginContext *context, GKeyFile *config_fil
     if (!context->journals)
         g_warning("not watching any journals");
 
-    if (libeventd_config_key_file_get_string_list(config_file, "Journald", "Events", &events, NULL) < 0) {
+    libeventd_config_key_file_get_string_list(config_file, "Journald", "Events", &events, NULL);
+
+    if (events) {
         gchar **event_iter = events;
 
         while (*event_iter) {
