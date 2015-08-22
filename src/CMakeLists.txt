@@ -10,6 +10,11 @@ include_directories(SYSTEM
 
 add_library(journald MODULE
     journald.c)
+target_link_libraries(journald
+    PRIVATE
+        ${EventdEvent_LIBRARIES}
+        ${EventdPlugin_LIBRARIES}
+        ${SystemdJournal_LIBRARIES})
 
 install(
     TARGETS     journald
