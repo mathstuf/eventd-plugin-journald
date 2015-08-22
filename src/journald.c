@@ -165,6 +165,7 @@ _eventd_journald_new_entry(EventdPluginContext *context)
         sd_read_field("MESSAGE", message, TRUE);
         sd_read_field("MESSAGE_ID", message_id, TRUE);
         sd_read_field("_HOSTNAME", hostname, TRUE);
+        /* TODO: read _SOURCE_REALTIME_TIMESTAMP */
 
         event = eventd_event_new("journal", kind);
         eventd_event_add_data(event, g_strdup("priority"), g_strdup(priority));
