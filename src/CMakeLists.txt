@@ -15,8 +15,12 @@ target_link_libraries(journald
         ${EventdEvent_LIBRARIES}
         ${EventdPlugin_LIBRARIES}
         ${SystemdJournal_LIBRARIES})
+set_target_properties(journald
+    PROPERTIES
+        PREFIX    ""
+        NO_SONAME 1)
 
 install(
     TARGETS     journald
-    DESTINATION lib${LIB_SUFFIX}/eventd
+    DESTINATION lib${LIB_SUFFIX}/eventd/plugins
     COMPONENT   runtime)
