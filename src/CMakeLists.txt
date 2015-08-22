@@ -1,5 +1,5 @@
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(EventdPlugin REQUIRED libeventd-plugin)
+pkg_check_modules(EventdPlugin REQUIRED libeventd-plugin>=0.3.0)
 pkg_check_modules(SystemdJournal REQUIRED libsystemd-journal)
 
 include_directories(SYSTEM
