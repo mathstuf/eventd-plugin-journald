@@ -176,8 +176,11 @@ _eventd_journald_new_entry(EventdPluginContext *context)
                 sd_read_field("RESULT", result, TRUE);
 
                 break;
-            default:
+            case 0:
                 assert(0);
+                continue;
+            default:
+                g_warning("unimplemented event handler: %d", make_event);
                 continue;
         }
 
