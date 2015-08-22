@@ -59,9 +59,9 @@
 
             <variablelist>
                 <varlistentry>
-                    <term><varname>Journals=</varname> (defaults to <literal>"system,user"</literal>)</term>
+                    <term><varname>Journals=</varname> (defaults to <literal>"system;user"</literal>)</term>
                     <listitem>
-                        <para>A <type>string</type></para>
+                        <para>A <type>string list</type></para>
                         <para>A semicolon-separated list of journals to watch. The supported journals:</para>
                         <para><literal>"system"</literal>: watch system events</para>
                         <para><literal>"user"</literal>: watch user events</para>
@@ -77,9 +77,9 @@
                 </varlistentry>
 
                 <varlistentry>
-                    <term><varname>Events=</varname> (defaults to <literal>"unit,error"</literal>)</term>
+                    <term><varname>Events=</varname> (defaults to <literal>"unit;error"</literal>)</term>
                     <listitem>
-                        <para>A <type>string</type></para>
+                        <para>A <type>string list</type></para>
                         <para>A semicolon-separated list of events to dispatch on. The supported events:</para>
                         <para><literal>"unit"</literal>: unit start and stop events</para>
                         <para><literal>"error"</literal>: error messages</para>
