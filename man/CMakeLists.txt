@@ -50,4 +50,3 @@ set(xsltproc_deps
     "${CMAKE_CURRENT_BINARY_DIR}/config.ent")
 
 generate_manpage(eventd-journald.conf 5)
-generate_manpage(eventd-journald.event 5)
