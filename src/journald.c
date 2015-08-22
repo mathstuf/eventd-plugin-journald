@@ -101,12 +101,18 @@ _eventd_journald_new_entry(EventdPluginContext *context)
     vars(declare);
 #undef declare
 
+    EventdEvent *event = NULL;
+
     for (;;) {
         int i;
         int ret = sd_journal_next(context->journal);
+        const char *kind;
         const void *data;
         size_t length;
         guint64 make_event = 0;
+
+        g_object_unref(event);
+        event = NULL;
 
 #define safe_free(var) \
     g_free(var);       \
@@ -136,6 +142,7 @@ _eventd_journald_new_entry(EventdPluginContext *context)
         sd_read_field("PRIORITY", priority, TRUE);
         int prio = *priority - '0';
         if ((prio <= LOG_ERR) && (context->events & EVENTD_JOURNALD_EVENT_ERROR)) {
+            kind = "error";
             make_event = EVENTD_JOURNALD_EVENT_ERROR;
         } else {
             sd_read_field("_COMM", comm, TRUE);
@@ -146,6 +153,7 @@ _eventd_journald_new_entry(EventdPluginContext *context)
             sd_read_field("_UID", uid, TRUE);
             if ((!g_strcmp0(uid, "0") && (context->journals & EVENTD_JOURNALD_JOURNAL_SYSTEM)) ||
                 (!g_strcmp0(uid, context->uid) && (context->journals & EVENTD_JOURNALD_JOURNAL_USER))) {
+                kind = "unit";
                 make_event = EVENTD_JOURNALD_EVENT_UNIT;
             }
         }
@@ -156,24 +164,32 @@ _eventd_journald_new_entry(EventdPluginContext *context)
 
         sd_read_field("MESSAGE", message, TRUE);
         sd_read_field("MESSAGE_ID", message_id, TRUE);
+        sd_read_field("_HOSTNAME", hostname, TRUE);
 
-        if (!context->local_only) {
-            sd_read_field("_HOSTNAME", hostname, TRUE);
-        }
-
-        /* TODO: make the event. */
+        event = eventd_event_new("journal", kind);
+        eventd_event_add_data(event, g_strdup("priority"), g_strdup(priority));
+        eventd_event_add_data(event, g_strdup("message"), g_strdup(message));
+        eventd_event_add_data(event, g_strdup("message_id"), g_strdup(message_id));
+        eventd_event_add_data(event, g_strdup("hostname"), g_strdup(hostname));
 
         switch (make_event) {
             case EVENTD_JOURNALD_EVENT_ERROR:
                 sd_read_field("_SYSTEMD_USER_UNIT", unit, FALSE);
                 if (!unit) {
-                    sd_read_field("_SYSTEMD_UNIT", unit, FALSE);
+                    sd_read_field("_SYSTEMD_UNIT", unit, TRUE);
+                }
+
+                if (unit) {
+                    eventd_event_add_data(event, g_strdup("unit"), g_strdup(unit));
                 }
 
                 break;
             case EVENTD_JOURNALD_EVENT_UNIT:
                 sd_read_field("USER_UNIT", unit, TRUE);
                 sd_read_field("RESULT", result, TRUE);
+
+                eventd_event_add_data(event, g_strdup("unit"), g_strdup(unit));
+                eventd_event_add_data(event, g_strdup("result"), g_strdup(result));
 
                 break;
             case 0:
@@ -184,10 +200,15 @@ _eventd_journald_new_entry(EventdPluginContext *context)
                 continue;
         }
 
-        /* TODO: send the event. */
+        eventd_event_set_timeout(event, 1000 /* TODO: timeout */);
+
+        if (!eventd_plugin_core_push_event(context->core, context->core_interface, event)) {
+            g_warning("failed to push an event into the queue: %s", message);
+        }
     }
 
     vars(g_free);
+    g_object_unref(event);
 
     return G_SOURCE_CONTINUE;
 }
