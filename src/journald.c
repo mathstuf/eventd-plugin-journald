@@ -33,9 +33,8 @@ enum EventdJournaldJournals {
 };
 
 enum EventdJournaldEvents {
-    EVENTD_JOURNALD_EVENT_START = 0x1,
-    EVENTD_JOURNALD_EVENT_STOP  = 0x2,
-    EVENTD_JOURNALD_EVENT_ERROR = 0x4
+    EVENTD_JOURNALD_EVENT_UNIT  = 0x1,
+    EVENTD_JOURNALD_EVENT_ERROR = 0x2
 };
 
 struct _EventdPluginContext {
@@ -213,8 +212,7 @@ _eventd_journald_global_parse(EventdPluginContext *context, GKeyFile *config_fil
             if (FALSE) {}
 
 #define eventd_journald_events(call)           \
-    call("start", EVENTD_JOURNALD_EVENT_START) \
-    call("stop", EVENTD_JOURNALD_EVENT_STOP)   \
+    call("unit", EVENTD_JOURNALD_EVENT_UNIT)   \
     call("error", EVENTD_JOURNALD_EVENT_ERROR)
 
 #define check_event(name, flag)             \
@@ -229,8 +227,7 @@ _eventd_journald_global_parse(EventdPluginContext *context, GKeyFile *config_fil
                 g_warning("unknown event '%s'", *event_iter);
         }
     } else {
-        context->events = EVENTD_JOURNALD_EVENT_START
-                        | EVENTD_JOURNALD_EVENT_STOP
+        context->events = EVENTD_JOURNALD_EVENT_UNIT
                         | EVENTD_JOURNALD_EVENT_ERROR;
     }
     g_strfreev(events);
