@@ -108,6 +108,12 @@ _eventd_journald_new_entry(EventdPluginContext *context)
         size_t length;
         guint64 make_event = 0;
 
+#define safe_free(var) \
+    g_free(var);       \
+    var = NULL
+        vars(safe_free);
+#undef safe_free
+
         if (!ret)
             break;
         if (ret < 0) {
@@ -124,7 +130,7 @@ _eventd_journald_new_entry(EventdPluginContext *context)
     } else if (ret == -ENOENT && !req) {                                \
         var = NULL;                                                     \
     } else {                                                            \
-        break;                                                          \
+        continue;                                                       \
     }
 
         sd_read_field("PRIORITY", priority, TRUE);
@@ -134,7 +140,7 @@ _eventd_journald_new_entry(EventdPluginContext *context)
         } else {
             sd_read_field("_COMM", comm, TRUE);
             if (g_strcmp0(comm, "systemd")) {
-                break;
+                continue;
             }
 
             sd_read_field("_UID", uid, TRUE);
@@ -145,7 +151,7 @@ _eventd_journald_new_entry(EventdPluginContext *context)
         }
 
         if (!make_event) {
-            break;
+            continue;
         }
 
         sd_read_field("MESSAGE", message, TRUE);
@@ -172,16 +178,10 @@ _eventd_journald_new_entry(EventdPluginContext *context)
                 break;
             default:
                 assert(0);
-                break;
+                continue;
         }
 
         /* TODO: send the event. */
-
-#define safe_free(var) \
-    g_free(var);       \
-    var = NULL
-        vars(safe_free);
-#undef safe_free
     }
 
     vars(g_free);
