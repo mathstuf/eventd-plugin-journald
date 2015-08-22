@@ -40,6 +40,7 @@ set(xsltproc_args
     --nonet
     --xinclude
     --stringparam funcsynopsis.style ansi
+    --stringparam man.output.quietly 1
     --path "${CMAKE_CURRENT_SOURCE_DIR}"
     --path "${CMAKE_CURRENT_BINARY_DIR}")
 set(xsltproc_deps
