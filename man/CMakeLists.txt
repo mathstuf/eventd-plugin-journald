@@ -12,14 +12,16 @@ function (generate_manpage name section)
     add_custom_command(
         OUTPUT  "${CMAKE_CURRENT_BINARY_DIR}/${name}.${section}"
         COMMAND "${XSLT_EXECUTABLE}"
-                -o "${CMAKE_CURRENT_BINARY_DIR}"
+                -o "${CMAKE_CURRENT_BINARY_DIR}/"
                 ${xsltproc_args}
                 ${ARGN}
                 "http://docbook.sourceforge.net/release/xsl/current/manpages/profile-docbook.xsl"
                 "${CMAKE_CURRENT_SOURCE_DIR}/${name}.xml"
         DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${name}.xml"
                 ${xsltproc_deps}
-        COMMENT "Generating manpage for ${name}.${section}")
+        COMMENT "Generating manpage for ${name}.${section}"
+        WORKING_DIRECTORY
+                "${CMAKE_CURRENT_BINARY_DIR}")
     add_custom_target("man-${name}.${section}"
         DEPENDS
             "${CMAKE_CURRENT_BINARY_DIR}/${name}.${section}")
