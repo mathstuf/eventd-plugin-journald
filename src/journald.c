@@ -42,8 +42,8 @@ enum EventdJournaldEvents {
 };
 
 struct _EventdPluginContext {
-    EventdCoreContext *core;
-    EventdCoreInterface *core_interface;
+    EventdPluginCoreContext *core;
+    EventdPluginCoreInterface *core_interface;
 
     gchar *uid;
 
@@ -57,7 +57,7 @@ struct _EventdPluginContext {
 };
 
 static EventdPluginContext *
-_eventd_journald_init(EventdCoreContext *core, EventdCoreInterface *core_interface)
+_eventd_journald_init(EventdPluginCoreContext *core, EventdPluginCoreInterface *core_interface)
 {
     EventdPluginContext *context;
 
@@ -333,11 +333,11 @@ JOURNALD_EXPORT
 void
 eventd_plugin_get_interface(EventdPluginInterface *interface)
 {
-    libeventd_plugin_interface_add_init_callback(interface, _eventd_journald_init);
-    libeventd_plugin_interface_add_uninit_callback(interface, _eventd_journald_uninit);
+    eventd_plugin_interface_add_init_callback(interface, _eventd_journald_init);
+    eventd_plugin_interface_add_uninit_callback(interface, _eventd_journald_uninit);
 
-    libeventd_plugin_interface_add_start_callback(interface, _eventd_journald_start);
-    libeventd_plugin_interface_add_stop_callback(interface, _eventd_journald_stop);
+    eventd_plugin_interface_add_start_callback(interface, _eventd_journald_start);
+    eventd_plugin_interface_add_stop_callback(interface, _eventd_journald_stop);
 
-    libeventd_plugin_interface_add_global_parse_callback(interface, _eventd_journald_global_parse);
+    eventd_plugin_interface_add_global_parse_callback(interface, _eventd_journald_global_parse);
 }
