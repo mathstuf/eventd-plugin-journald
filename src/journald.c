@@ -254,6 +254,7 @@ _eventd_journald_start(EventdPluginContext *context)
 
     context->source = g_unix_fd_source_new(fd, events);
     g_source_set_callback(context->source, (GSourceFunc)_eventd_journald_new_entry, context, NULL);
+    g_source_attach(context->source, NULL);
 }
 
 static void
@@ -264,6 +265,7 @@ _eventd_journald_stop(EventdPluginContext *context)
     sd_journal_close(context->journal);
     context->journal = NULL;
 
+    g_source_destroy(context->source);
     g_source_unref(context->source);
     context->source = NULL;
 }
