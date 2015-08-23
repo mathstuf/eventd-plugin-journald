@@ -110,7 +110,8 @@ _eventd_journald_new_entry(gint fd, GIOCondition events, EventdPluginContext *co
         size_t length;
         guint64 make_event = 0;
 
-        g_object_unref(event);
+        if (event)
+            g_object_unref(event);
         event = NULL;
 
 #define safe_free(var) \
@@ -205,7 +206,8 @@ _eventd_journald_new_entry(gint fd, GIOCondition events, EventdPluginContext *co
     }
 
     vars(g_free);
-    g_object_unref(event);
+    if (event)
+        g_object_unref(event);
 
     return G_SOURCE_CONTINUE;
 }
