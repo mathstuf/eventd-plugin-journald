@@ -307,6 +307,8 @@ _eventd_journald_global_parse(EventdPluginContext *context, GKeyFile *config_fil
 
             else
                 g_warning("unknown journal '%s'", *journal_iter);
+
+            ++journal_iter;
         }
     } else {
         context->journals = EVENTD_JOURNALD_JOURNAL_SYSTEM
@@ -341,6 +343,8 @@ _eventd_journald_global_parse(EventdPluginContext *context, GKeyFile *config_fil
 
             else
                 g_warning("unknown event '%s'", *event_iter);
+
+            ++event_iter;
         }
     } else {
         context->events = EVENTD_JOURNALD_EVENT_UNIT
