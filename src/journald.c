@@ -93,6 +93,7 @@ _eventd_journald_new_entry(gint fd, GIOCondition events, EventdPluginContext *co
     call(message_id); \
     call(hostname);   \
     call(unit);       \
+    call(pid);        \
     call(result);     \
     call(_dummy)
 
@@ -191,21 +192,26 @@ _eventd_journald_new_entry(gint fd, GIOCondition events, EventdPluginContext *co
         switch (make_event) {
             case EVENTD_JOURNALD_EVENT_ERROR:
                 sd_read_field("_SYSTEMD_USER_UNIT", unit, FALSE);
-                if (!unit) {
-                    sd_read_field("_SYSTEMD_UNIT", unit, TRUE);
-                }
-
                 if (unit) {
                     eventd_event_add_data(event, g_strdup("unit"), g_strdup(unit));
+                    eventd_event_add_data(event, g_strdup("unit_kind"), g_strdup("user"));
+                } else {
+                    sd_read_field("_SYSTEMD_UNIT", unit, TRUE);
+                    if (unit) {
+                        eventd_event_add_data(event, g_strdup("unit"), g_strdup(unit));
+                        eventd_event_add_data(event, g_strdup("unit_kind"), g_strdup("system"));
+                    }
                 }
 
                 break;
             case EVENTD_JOURNALD_EVENT_UNIT:
+                sd_read_field("_PID", pid, TRUE);
                 sd_read_field("USER_UNIT", unit, TRUE);
                 sd_read_field("RESULT", result, FALSE);
 
                 eventd_event_add_data(event, g_strdup("unit"), g_strdup(unit));
                 eventd_event_add_data(event, g_strdup("result"), g_strdup(result ? result : ""));
+                eventd_event_add_data(event, g_strdup("unit_kind"), g_strdup(g_strcmp0(pid, "1") ? "user" : "system"));
 
                 break;
             case 0:
