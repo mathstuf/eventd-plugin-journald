@@ -202,10 +202,10 @@ _eventd_journald_new_entry(gint fd, GIOCondition events, EventdPluginContext *co
                 break;
             case EVENTD_JOURNALD_EVENT_UNIT:
                 sd_read_field("USER_UNIT", unit, TRUE);
-                sd_read_field("RESULT", result, TRUE);
+                sd_read_field("RESULT", result, FALSE);
 
                 eventd_event_add_data(event, g_strdup("unit"), g_strdup(unit));
-                eventd_event_add_data(event, g_strdup("result"), g_strdup(result));
+                eventd_event_add_data(event, g_strdup("result"), g_strdup(result ? result : ""));
 
                 break;
             case 0:
