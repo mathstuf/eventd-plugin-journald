@@ -178,14 +178,14 @@ _eventd_journald_new_entry(gint fd, GIOCondition events, EventdPluginContext *co
             continue;
 
         sd_read_field("MESSAGE", message, TRUE);
-        sd_read_field("MESSAGE_ID", message_id, TRUE);
+        sd_read_field("MESSAGE_ID", message_id, FALSE);
         sd_read_field("_HOSTNAME", hostname, TRUE);
         /* TODO: read _SOURCE_REALTIME_TIMESTAMP */
 
         event = eventd_event_new("journal", kind);
         eventd_event_add_data(event, g_strdup("priority"), g_strdup(priority));
         eventd_event_add_data(event, g_strdup("message"), g_strdup(message));
-        eventd_event_add_data(event, g_strdup("message_id"), g_strdup(message_id));
+        eventd_event_add_data(event, g_strdup("message_id"), g_strdup(message_id ? message_id : ""));
         eventd_event_add_data(event, g_strdup("hostname"), g_strdup(hostname));
 
         switch (make_event) {
