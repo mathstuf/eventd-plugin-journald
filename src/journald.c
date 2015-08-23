@@ -145,9 +145,8 @@ _eventd_journald_new_entry(EventdPluginContext *context)
             make_event = EVENTD_JOURNALD_EVENT_ERROR;
         } else {
             sd_read_field("_COMM", comm, TRUE);
-            if (g_strcmp0(comm, "systemd")) {
+            if (g_strcmp0(comm, "systemd"))
                 continue;
-            }
 
             sd_read_field("_UID", uid, TRUE);
             if ((!g_strcmp0(uid, "0") && (context->journals & EVENTD_JOURNALD_JOURNAL_SYSTEM)) ||
@@ -157,9 +156,8 @@ _eventd_journald_new_entry(EventdPluginContext *context)
             }
         }
 
-        if (!make_event) {
+        if (!make_event)
             continue;
-        }
 
         sd_read_field("MESSAGE", message, TRUE);
         sd_read_field("MESSAGE_ID", message_id, TRUE);
@@ -202,9 +200,8 @@ _eventd_journald_new_entry(EventdPluginContext *context)
 
         eventd_event_set_timeout(event, 1000 /* TODO: timeout */);
 
-        if (!eventd_plugin_core_push_event(context->core, context->core_interface, event)) {
+        if (!eventd_plugin_core_push_event(context->core, context->core_interface, event))
             g_warning("failed to push an event into the queue: %s", message);
-        }
     }
 
     vars(g_free);
