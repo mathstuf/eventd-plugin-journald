@@ -80,7 +80,7 @@ _eventd_journald_uninit(EventdPluginContext *context)
 }
 
 static gboolean
-_eventd_journald_new_entry(EventdPluginContext *context)
+_eventd_journald_new_entry(gint fd, GIOCondition events, EventdPluginContext *context)
 {
     if (!context->ok)
         return G_SOURCE_REMOVE;
@@ -253,6 +253,7 @@ _eventd_journald_start(EventdPluginContext *context)
     context->ok = TRUE;
 
     context->source = g_unix_fd_source_new(fd, events);
+    /* g_unix_fd_source_new uses GUnixFDSourceFunc as its callback function. */
     g_source_set_callback(context->source, (GSourceFunc)_eventd_journald_new_entry, context, NULL);
     g_source_attach(context->source, NULL);
 }
