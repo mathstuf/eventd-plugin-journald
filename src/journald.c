@@ -146,8 +146,8 @@ _eventd_journald_new_entry(gint fd, GIOCondition events, EventdPluginContext *co
 #define sd_read_field(field, var, req)                                  \
     ret = sd_journal_get_data(context->journal, field, &data, &length); \
     if (!ret) {                                                         \
-        var = g_malloc0((length + 1) * sizeof(gchar));                  \
-        memcpy(var, data, length);                                      \
+        var = g_malloc0((length - sizeof(field) + 1) * sizeof(gchar));  \
+        memcpy(var, data + sizeof(field), length - sizeof(field));      \
     } else if (ret == -ENOENT) {                                        \
         var = NULL;                                                     \
         if (req)                                                        \
