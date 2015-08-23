@@ -4,7 +4,7 @@ set(project "eventd-plugin-journald")
 project("${project}" C)
 
 set("${project}_version_major" 0)
-set("${project}_version_minor" 1)
+set("${project}_version_minor" 2)
 set("${project}_version_patch" 0)
 set("${project}_version" "${${project}_version_major}.${${project}_version_minor}.${${project}_version_patch}")
 
