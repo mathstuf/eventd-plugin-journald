@@ -148,8 +148,10 @@ _eventd_journald_new_entry(gint fd, GIOCondition events, EventdPluginContext *co
     if (!ret) {                                                         \
         var = g_malloc0((length + 1) * sizeof(gchar));                  \
         memcpy(var, data, length);                                      \
-    } else if (ret == -ENOENT && !req) {                                \
+    } else if (ret == -ENOENT) {                                        \
         var = NULL;                                                     \
+        if (req)                                                        \
+            continue;                                                   \
     } else {                                                            \
         continue;                                                       \
     }
