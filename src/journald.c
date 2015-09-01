@@ -387,7 +387,7 @@ _eventd_journald_global_parse(EventdPluginContext *context, GKeyFile *config_fil
 
 #define JOURNALD_EXPORT __attribute__((__visibility__("default")))
 
-JOURNALD_EXPORT const gchar *eventd_plugin_id = "eventd-journald";
+JOURNALD_EXPORT const gchar *eventd_plugin_id = "journald";
 JOURNALD_EXPORT
 void
 eventd_plugin_get_interface(EventdPluginInterface *interface)
