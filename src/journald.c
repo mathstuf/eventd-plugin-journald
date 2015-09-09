@@ -79,12 +79,9 @@ _eventd_journald_uninit(EventdPluginContext *context)
     g_free(context);
 }
 
-static gboolean
-_eventd_journald_new_entry(gint fd, GIOCondition events, EventdPluginContext *context)
+static void
+_eventd_journald_handle_entry(EventdPluginContext *context)
 {
-    if (!context->ok)
-        return G_SOURCE_REMOVE;
-
 #define vars(call)    \
     call(priority);   \
     call(comm);       \
@@ -102,24 +99,121 @@ _eventd_journald_new_entry(gint fd, GIOCondition events, EventdPluginContext *co
     vars(declare);
 #undef declare
 
+    int ret;
+    const void *data;
+    size_t length;
+    const char *kind;
+    guint64 make_event = 0;
+
     EventdEvent *event = NULL;
+
+#define sd_read_field(field, var, req)                                  \
+    ret = sd_journal_get_data(context->journal, field, &data, &length); \
+    if (!ret) {                                                         \
+        var = g_malloc0((length - sizeof(field) + 1) * sizeof(gchar));  \
+        memcpy(var, data + sizeof(field), length - sizeof(field));      \
+    } else if (ret == -ENOENT) {                                        \
+        var = NULL;                                                     \
+        if (req)                                                        \
+            goto exit;                                                  \
+    } else {                                                            \
+        goto exit;                                                      \
+    }
+
+    sd_read_field("PRIORITY", priority, TRUE);
+    int prio = *priority - '0';
+    if ((prio <= LOG_ERR) && (context->events & EVENTD_JOURNALD_EVENT_ERROR)) {
+        kind = "error";
+        make_event = EVENTD_JOURNALD_EVENT_ERROR;
+    } else {
+        sd_read_field("_COMM", comm, TRUE);
+        if (g_strcmp0(comm, "systemd"))
+            goto exit;
+
+        sd_read_field("_UID", uid, TRUE);
+        if ((!g_strcmp0(uid, "0") && (context->journals & EVENTD_JOURNALD_JOURNAL_SYSTEM)) ||
+            (!g_strcmp0(uid, context->uid) && (context->journals & EVENTD_JOURNALD_JOURNAL_USER))) {
+            kind = "unit";
+            make_event = EVENTD_JOURNALD_EVENT_UNIT;
+        }
+    }
+
+    if (!make_event)
+        goto exit;
+
+    sd_read_field("MESSAGE", message, TRUE);
+    sd_read_field("MESSAGE_ID", message_id, FALSE);
+    sd_read_field("_HOSTNAME", hostname, TRUE);
+    /* TODO: read _SOURCE_REALTIME_TIMESTAMP */
+
+    event = eventd_event_new("journal", kind);
+    eventd_event_add_data(event, g_strdup("priority"), g_strdup(priority));
+    eventd_event_add_data(event, g_strdup("message"), g_strdup(message));
+    eventd_event_add_data(event, g_strdup("message_id"), g_strdup(message_id ? message_id : ""));
+    eventd_event_add_data(event, g_strdup("hostname"), g_strdup(hostname));
+
+    switch (make_event) {
+        case EVENTD_JOURNALD_EVENT_ERROR:
+            sd_read_field("_SYSTEMD_USER_UNIT", unit, FALSE);
+            if (unit) {
+                eventd_event_add_data(event, g_strdup("unit"), g_strdup(unit));
+                eventd_event_add_data(event, g_strdup("unit_kind"), g_strdup("user"));
+            } else {
+                sd_read_field("_SYSTEMD_UNIT", unit, TRUE);
+                if (unit) {
+                    eventd_event_add_data(event, g_strdup("unit"), g_strdup(unit));
+                    eventd_event_add_data(event, g_strdup("unit_kind"), g_strdup("system"));
+                }
+            }
+
+            break;
+        case EVENTD_JOURNALD_EVENT_UNIT:
+            sd_read_field("_PID", pid, TRUE);
+            sd_read_field("USER_UNIT", unit, TRUE);
+            sd_read_field("RESULT", result, FALSE);
+
+            eventd_event_add_data(event, g_strdup("unit"), g_strdup(unit));
+            eventd_event_add_data(event, g_strdup("result"), g_strdup(result ? result : ""));
+            eventd_event_add_data(event, g_strdup("unit_kind"), g_strdup(g_strcmp0(pid, "1") ? "user" : "system"));
+
+            break;
+        case 0:
+            assert(0);
+            goto exit;
+        default:
+            g_warning("unimplemented event handler: %" G_GUINT64_FORMAT, make_event);
+            goto exit;
+    }
+
+#undef sd_read_field
+
+    eventd_event_set_timeout(event, 1000 /* TODO: timeout */);
+
+    if (!eventd_plugin_core_push_event(context->core, context->core_interface, event))
+        g_warning("failed to push an event into the queue: %s", message);
+
+exit:
+
+#define safe_free(var) \
+g_free(var);       \
+var = NULL
+    vars(safe_free);
+#undef safe_free
+
+    if (event)
+        g_object_unref(event);
+
+#undef vars
+}
+
+static gboolean
+_eventd_journald_new_entry(gint fd, GIOCondition events, EventdPluginContext *context)
+{
+    if (!context->ok)
+        return G_SOURCE_REMOVE;
 
     for (;;) {
         int ret;
-        const char *kind;
-        const void *data;
-        size_t length;
-        guint64 make_event = 0;
-
-        if (event)
-            g_object_unref(event);
-        event = NULL;
-
-#define safe_free(var) \
-    g_free(var);       \
-    var = NULL
-        vars(safe_free);
-#undef safe_free
 
         ret = sd_journal_process(context->journal);
         switch (ret) {
@@ -144,93 +238,8 @@ _eventd_journald_new_entry(gint fd, GIOCondition events, EventdPluginContext *co
             return G_SOURCE_REMOVE;
         }
 
-#define sd_read_field(field, var, req)                                  \
-    ret = sd_journal_get_data(context->journal, field, &data, &length); \
-    if (!ret) {                                                         \
-        var = g_malloc0((length - sizeof(field) + 1) * sizeof(gchar));  \
-        memcpy(var, data + sizeof(field), length - sizeof(field));      \
-    } else if (ret == -ENOENT) {                                        \
-        var = NULL;                                                     \
-        if (req)                                                        \
-            continue;                                                   \
-    } else {                                                            \
-        continue;                                                       \
+        _eventd_journald_handle_entry(context);
     }
-
-        sd_read_field("PRIORITY", priority, TRUE);
-        int prio = *priority - '0';
-        if ((prio <= LOG_ERR) && (context->events & EVENTD_JOURNALD_EVENT_ERROR)) {
-            kind = "error";
-            make_event = EVENTD_JOURNALD_EVENT_ERROR;
-        } else {
-            sd_read_field("_COMM", comm, TRUE);
-            if (g_strcmp0(comm, "systemd"))
-                continue;
-
-            sd_read_field("_UID", uid, TRUE);
-            if ((!g_strcmp0(uid, "0") && (context->journals & EVENTD_JOURNALD_JOURNAL_SYSTEM)) ||
-                (!g_strcmp0(uid, context->uid) && (context->journals & EVENTD_JOURNALD_JOURNAL_USER))) {
-                kind = "unit";
-                make_event = EVENTD_JOURNALD_EVENT_UNIT;
-            }
-        }
-
-        if (!make_event)
-            continue;
-
-        sd_read_field("MESSAGE", message, TRUE);
-        sd_read_field("MESSAGE_ID", message_id, FALSE);
-        sd_read_field("_HOSTNAME", hostname, TRUE);
-        /* TODO: read _SOURCE_REALTIME_TIMESTAMP */
-
-        event = eventd_event_new("journal", kind);
-        eventd_event_add_data(event, g_strdup("priority"), g_strdup(priority));
-        eventd_event_add_data(event, g_strdup("message"), g_strdup(message));
-        eventd_event_add_data(event, g_strdup("message_id"), g_strdup(message_id ? message_id : ""));
-        eventd_event_add_data(event, g_strdup("hostname"), g_strdup(hostname));
-
-        switch (make_event) {
-            case EVENTD_JOURNALD_EVENT_ERROR:
-                sd_read_field("_SYSTEMD_USER_UNIT", unit, FALSE);
-                if (unit) {
-                    eventd_event_add_data(event, g_strdup("unit"), g_strdup(unit));
-                    eventd_event_add_data(event, g_strdup("unit_kind"), g_strdup("user"));
-                } else {
-                    sd_read_field("_SYSTEMD_UNIT", unit, TRUE);
-                    if (unit) {
-                        eventd_event_add_data(event, g_strdup("unit"), g_strdup(unit));
-                        eventd_event_add_data(event, g_strdup("unit_kind"), g_strdup("system"));
-                    }
-                }
-
-                break;
-            case EVENTD_JOURNALD_EVENT_UNIT:
-                sd_read_field("_PID", pid, TRUE);
-                sd_read_field("USER_UNIT", unit, TRUE);
-                sd_read_field("RESULT", result, FALSE);
-
-                eventd_event_add_data(event, g_strdup("unit"), g_strdup(unit));
-                eventd_event_add_data(event, g_strdup("result"), g_strdup(result ? result : ""));
-                eventd_event_add_data(event, g_strdup("unit_kind"), g_strdup(g_strcmp0(pid, "1") ? "user" : "system"));
-
-                break;
-            case 0:
-                assert(0);
-                continue;
-            default:
-                g_warning("unimplemented event handler: %" G_GUINT64_FORMAT, make_event);
-                continue;
-        }
-
-        eventd_event_set_timeout(event, 1000 /* TODO: timeout */);
-
-        if (!eventd_plugin_core_push_event(context->core, context->core_interface, event))
-            g_warning("failed to push an event into the queue: %s", message);
-    }
-
-    vars(g_free);
-    if (event)
-        g_object_unref(event);
 
     return G_SOURCE_CONTINUE;
 }
