@@ -10,6 +10,9 @@ include_directories(SYSTEM
 
 add_library(journald MODULE
     journald.c)
+target_compile_definitions(journald
+    PRIVATE
+        -DG_LOG_DOMAIN="eventd-journald")
 target_link_libraries(journald
     PRIVATE
         ${EventdEvent_LIBRARIES}
