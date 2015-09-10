@@ -89,6 +89,7 @@ _eventd_journald_handle_entry(EventdPluginContext *context)
     call(message);    \
     call(message_id); \
     call(hostname);   \
+    call(timestamp);  \
     call(unit);       \
     call(pid);        \
     call(result);     \
@@ -144,13 +145,14 @@ _eventd_journald_handle_entry(EventdPluginContext *context)
     sd_read_field("MESSAGE", message, TRUE);
     sd_read_field("MESSAGE_ID", message_id, FALSE);
     sd_read_field("_HOSTNAME", hostname, TRUE);
-    /* TODO: read _SOURCE_REALTIME_TIMESTAMP */
+    sd_read_field("_SOURCE_REALTIME_TIMESTAMP", timestamp, TRUE);
 
     event = eventd_event_new("journal", kind);
     eventd_event_add_data(event, g_strdup("priority"), g_strdup(priority));
     eventd_event_add_data(event, g_strdup("message"), g_strdup(message));
     eventd_event_add_data(event, g_strdup("message_id"), g_strdup(message_id ? message_id : ""));
     eventd_event_add_data(event, g_strdup("hostname"), g_strdup(hostname));
+    eventd_event_add_data(event, g_strdup("timestamp"), g_strdup(timestamp));
 
     switch (make_event) {
         case EVENTD_JOURNALD_EVENT_ERROR:
