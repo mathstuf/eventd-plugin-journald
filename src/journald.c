@@ -154,6 +154,21 @@ _eventd_journald_handle_entry(EventdPluginContext *context)
     eventd_event_add_data(event, g_strdup("hostname"), g_strdup(hostname));
     if (timestamp) {
         eventd_event_add_data(event, g_strdup("timestamp"), g_strdup(timestamp));
+
+        gchar *end;
+        guint64 time = g_ascii_strtoll(timestamp, &end, 10);
+        if (!*end) {
+            gint64 secs = time / 1000000;
+            GDateTime *dt = g_date_time_new_from_unix_utc(secs);
+
+            if (dt) {
+                gchar *time_format = g_date_time_format(dt, "%F %T");
+
+                eventd_event_add_data(event, g_strdup("timestamp_string"), time_format);
+
+                g_date_time_unref(dt);
+            }
+        }
     }
 
     switch (make_event) {
