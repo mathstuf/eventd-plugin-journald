@@ -39,7 +39,6 @@ configure_file(
     @ONLY)
 
 set(xsltproc_args
-    --nonet
     --xinclude
     --stringparam funcsynopsis.style ansi
     --stringparam man.output.quietly 1
@@ -48,5 +47,14 @@ set(xsltproc_args
 set(xsltproc_deps
     "${CMAKE_CURRENT_SOURCE_DIR}/common-man.xml"
     "${CMAKE_CURRENT_BINARY_DIR}/config.ent")
+
+option(JOURNALD_XSLT_VERIFY "Verify the manpages using the DTD" ON)
+mark_as_advanced(JOURNALD_XSLT_VERIFY)
+
+if (NOT JOURNALD_XSLT_VERIFY)
+    list(APPEND xsltproc_args
+        --nonet
+        --novalid)
+endif ()
 
 generate_manpage(eventd-journald.conf 5)
