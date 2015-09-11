@@ -208,6 +208,10 @@ _eventd_journald_handle_entry(EventdPluginContext *context)
 
     eventd_event_set_timeout(event, 1000 /* TODO: timeout */);
 
+#ifndef NDEBUG
+    g_debug("creating %s event: %s", kind, message);
+#endif
+
     if (!eventd_plugin_core_push_event(context->core, context->core_interface, event))
         g_warning("failed to push an event into the queue: %s", message);
 
