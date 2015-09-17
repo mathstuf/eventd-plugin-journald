@@ -35,7 +35,18 @@ set_target_properties(journald
         PREFIX    ""
         NO_SONAME 1)
 
+pkg_get_variable(libeventd-plugin exec_prefix eventdplugin_execprefix)
+if (NOT CMAKE_INSTALL_PREFIX STREQUAL eventdplugin_execprefix)
+  message(FATAL_ERROR "CMAKE_INSTALL_PREFIX does not match libeventd-plugin's exec-prefix (${eventdplugin_execprefix}); this is not supported")
+endif ()
+
+pkg_get_variable(libeventd-plugin pluginsdir eventdplugin_pluginsdir)
+set(EVENTD_PLUGINS_DIR ${eventdplugin_pluginsdir}
+    CACHE
+    PATH
+    "eventd plugins directory (defaults to ${eventdplugin_pluginsdir}")
+
 install(
     TARGETS     journald
-    DESTINATION lib${LIB_SUFFIX}/eventd/plugins
+    DESTINATION ${EVENTD_PLUGINS_DIR}
     COMPONENT   runtime)
