@@ -41,12 +41,10 @@ if (NOT CMAKE_INSTALL_PREFIX STREQUAL eventdplugin_execprefix)
 endif ()
 
 pkg_get_variable(libeventd-plugin pluginsdir eventdplugin_pluginsdir)
-set(EVENTD_PLUGINS_DIR ${eventdplugin_pluginsdir}
-    CACHE
-    PATH
-    "eventd plugins directory (defaults to ${eventdplugin_pluginsdir}")
+set(EVENTD_PLUGINS_DIR "${eventdplugin_pluginsdir}"
+    CACHE PATH "eventd plugins directory")
 
 install(
     TARGETS     journald
-    DESTINATION ${EVENTD_PLUGINS_DIR}
+    DESTINATION "${EVENTD_PLUGINS_DIR}"
     COMPONENT   runtime)
