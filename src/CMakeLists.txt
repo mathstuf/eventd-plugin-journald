@@ -23,7 +23,7 @@ add_library(journald MODULE
     journald.c)
 target_compile_definitions(journald
     PRIVATE
-        -DG_LOG_DOMAIN="eventd-journald")
+        -DG_LOG_DOMAIN="journald")
 target_link_libraries(journald
     PRIVATE
         ${Eventd_LIBRARIES}
