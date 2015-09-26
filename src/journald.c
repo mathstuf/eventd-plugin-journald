@@ -21,8 +21,8 @@
 #include <glib-object.h>
 #include <glib-unix.h>
 
-#include <libeventd-config.h>
 #include <libeventd-event.h>
+#include <libeventd-helpers-config.h>
 #include <eventd-plugin.h>
 
 #include <systemd/sd-journal.h>
@@ -338,13 +338,13 @@ _eventd_journald_global_parse(EventdPluginContext *context, GKeyFile *config_fil
     if (!g_key_file_has_group(config_file, "Journald"))
         return;
 
-    if (libeventd_config_key_file_get_boolean(config_file, "Journald", "LocalOnly", &local_only) < 0) {
+    if (evhelpers_config_key_file_get_boolean(config_file, "Journald", "LocalOnly", &local_only) < 0) {
         context->local_only = TRUE;
     } else {
         context->local_only = local_only;
     }
 
-    libeventd_config_key_file_get_string_list(config_file, "Journald", "Journals", &journals, NULL);
+    evhelpers_config_key_file_get_string_list(config_file, "Journald", "Journals", &journals, NULL);
 
     if (journals) {
         gchar **journal_iter = journals;
@@ -380,7 +380,7 @@ _eventd_journald_global_parse(EventdPluginContext *context, GKeyFile *config_fil
     if (!context->journals)
         g_warning("not watching any journals");
 
-    libeventd_config_key_file_get_string_list(config_file, "Journald", "Events", &events, NULL);
+    evhelpers_config_key_file_get_string_list(config_file, "Journald", "Events", &events, NULL);
 
     if (events) {
         gchar **event_iter = events;
