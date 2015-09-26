@@ -3,11 +3,22 @@ pkg_check_modules(Eventd REQUIRED libeventd>=0.4)
 pkg_check_modules(EventdPlugin REQUIRED libeventd-plugin>=0.3)
 pkg_check_modules(SystemdJournal REQUIRED libsystemd-journal)
 
-macro (pkg_get_variable pkg var out)
-    execute_process(COMMAND ${PKG_CONFIG_EXECUTABLE} --variable=${var} ${pkg}
-        OUTPUT_VARIABLE ${out}
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-endmacro ()
+if (NOT COMMAND pkg_get_variable)
+    function (pkg_get_variable pkg var out)
+        execute_process(
+            COMMAND "${PKG_CONFIG_EXECUTABLE}"
+                    "--variable=${var}"
+                    "${pkg}"
+            OUTPUT_VARIABLE output
+            RESULT_VARIABLE res
+            OUTPUT_STRIP_TRAILING_WHITESPACE)
+        if (NOT res)
+            set("${out}"
+                "${output}"
+                PARENT_SCOPE)
+        endif ()
+    endfunction ()
+endif ()
 
 pkg_get_variable(libeventd pkglibdir eventd_pkglibdir)
 find_library(EventdHelpers_LIBRARY eventd-helpers
