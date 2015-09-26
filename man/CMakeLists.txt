@@ -52,7 +52,7 @@ option(JOURNALD_XSLT_VERIFY "Verify the manpages using the DTD" ON)
 mark_as_advanced(JOURNALD_XSLT_VERIFY)
 
 if (NOT JOURNALD_XSLT_VERIFY)
-    list(APPEND xsltproc_args
+    list(INSERT xsltproc_args 0
         --nonet
         --novalid)
 endif ()
