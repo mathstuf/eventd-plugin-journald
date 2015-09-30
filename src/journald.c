@@ -166,6 +166,11 @@ _eventd_journald_handle_entry(EventdPluginContext *context)
 
                 eventd_event_add_data(event, g_strdup("timestamp_string"), time_format);
 
+                GDateTime *ldt = g_date_time_to_local(dt);
+                gchar *local_time_format = g_date_time_format(ldt, "%F %T");
+
+                eventd_event_add_data(event, g_strdup("timestamp_string_local"), local_time_format);
+
                 g_date_time_unref(dt);
             }
         }
