@@ -4,7 +4,7 @@ pkg_check_modules(EventdPlugin REQUIRED libeventd-plugin>=0.3)
 pkg_check_modules(SystemdJournal REQUIRED libsystemd-journal)
 
 if (NOT COMMAND pkg_get_variable)
-    function (pkg_get_variable pkg var out)
+    function (pkg_get_variable out pkg var)
         execute_process(
             COMMAND "${PKG_CONFIG_EXECUTABLE}"
                     "--variable=${var}"
@@ -20,7 +20,7 @@ if (NOT COMMAND pkg_get_variable)
     endfunction ()
 endif ()
 
-pkg_get_variable(libeventd pkglibdir eventd_pkglibdir)
+pkg_get_variable(eventd_pkglibdir libeventd pkglibdir)
 find_library(EventdHelpers_LIBRARY eventd-helpers
     PATHS ${eventd_pkglibdir}
     NO_DEFAULT_PATH)
@@ -46,12 +46,12 @@ set_target_properties(journald
         PREFIX    ""
         NO_SONAME 1)
 
-pkg_get_variable(libeventd-plugin exec_prefix eventdplugin_execprefix)
+pkg_get_variable(eventdplugin_execprefix libeventd-plugin exec_prefix)
 if (NOT CMAKE_INSTALL_PREFIX STREQUAL eventdplugin_execprefix)
   message(FATAL_ERROR "CMAKE_INSTALL_PREFIX does not match libeventd-plugin's exec-prefix (${eventdplugin_execprefix}); this is not supported")
 endif ()
 
-pkg_get_variable(libeventd-plugin pluginsdir eventdplugin_pluginsdir)
+pkg_get_variable(eventdplugin_pluginsdir libeventd-plugin pluginsdir)
 set(EVENTD_PLUGINS_DIR "${eventdplugin_pluginsdir}"
     CACHE PATH "eventd plugins directory")
 
