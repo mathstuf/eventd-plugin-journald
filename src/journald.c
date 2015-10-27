@@ -123,8 +123,10 @@ _eventd_journald_handle_entry(EventdPluginContext *context)
 
     sd_read_field("PRIORITY", priority, TRUE);
     int prio = *priority - '0';
+    gint64 timeout = -1;
     if ((prio <= LOG_ERR) && (context->events & EVENTD_JOURNALD_EVENT_ERROR)) {
         kind = "error";
+        timeout = 5000;
         make_event = EVENTD_JOURNALD_EVENT_ERROR;
     } else {
         sd_read_field("_COMM", comm, TRUE);
@@ -135,6 +137,7 @@ _eventd_journald_handle_entry(EventdPluginContext *context)
         if ((!g_strcmp0(uid, "0") && (context->journals & EVENTD_JOURNALD_JOURNAL_SYSTEM)) ||
             (!g_strcmp0(uid, context->uid) && (context->journals & EVENTD_JOURNALD_JOURNAL_USER))) {
             kind = "unit";
+            timeout = 1000;
             make_event = EVENTD_JOURNALD_EVENT_UNIT;
         }
     }
@@ -211,7 +214,7 @@ _eventd_journald_handle_entry(EventdPluginContext *context)
 
 #undef sd_read_field
 
-    eventd_event_set_timeout(event, 1000 /* TODO: timeout */);
+    eventd_event_set_timeout(event, timeout);
 
 #ifndef NDEBUG
     g_debug("creating %s event: %s", kind, message);
