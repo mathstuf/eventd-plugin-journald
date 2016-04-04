@@ -1,6 +1,6 @@
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(Eventd REQUIRED libeventd>=0.10)
-pkg_check_modules(EventdPlugin REQUIRED libeventd-plugin>=0.3)
+pkg_check_modules(Eventd REQUIRED libeventd>=0.11)
+pkg_check_modules(EventdPlugin REQUIRED libeventd-plugin>=0.11)
 pkg_check_modules(SystemdJournal REQUIRED libsystemd-journal)
 
 if (NOT COMMAND pkg_get_variable)

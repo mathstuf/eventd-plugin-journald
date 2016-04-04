@@ -43,7 +43,6 @@ enum EventdJournaldEvents {
 
 struct _EventdPluginContext {
     EventdPluginCoreContext *core;
-    EventdPluginCoreInterface *core_interface;
 
     gchar *uid;
 
@@ -57,7 +56,7 @@ struct _EventdPluginContext {
 };
 
 static EventdPluginContext *
-_eventd_journald_init(EventdPluginCoreContext *core, EventdPluginCoreInterface *core_interface)
+_eventd_journald_init(EventdPluginCoreContext *core)
 {
     EventdPluginContext *context;
 
@@ -66,7 +65,6 @@ _eventd_journald_init(EventdPluginCoreContext *core, EventdPluginCoreInterface *
     context->uid = g_strdup_printf("%u", getuid());
 
     context->core = core;
-    context->core_interface= core_interface;
 
     return context;
 }
@@ -213,7 +211,7 @@ _eventd_journald_handle_entry(EventdPluginContext *context)
 
     g_debug("creating %s event: %s", kind, message);
 
-    if (!eventd_plugin_core_push_event(context->core, context->core_interface, event))
+    if (!eventd_plugin_core_push_event(context->core, event))
         g_warning("failed to push an event into the queue: %s", message);
 
 exit:
