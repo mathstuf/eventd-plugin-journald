@@ -5,7 +5,7 @@ project("${project}" C)
 
 set("${project}_version_major" 0)
 set("${project}_version_minor" 12)
-set("${project}_version_patch" 0)
+set("${project}_version_patch" 1)
 set("${project}_version" "${${project}_version_major}.${${project}_version_minor}.${${project}_version_patch}")
 
 set(CMAKE_C_FLAGS
