@@ -151,7 +151,7 @@ _eventd_journald_handle_entry(EventdPluginContext *context)
     eventd_event_add_data_string(event, g_strdup("message_id"), g_strdup(message_id ? message_id : ""));
     eventd_event_add_data_string(event, g_strdup("hostname"), g_strdup(hostname));
     if (timestamp) {
-        eventd_event_add_data(event, g_strdup("timestamp"), g_strdup(timestamp));
+        eventd_event_add_data_string(event, g_strdup("timestamp"), g_strdup(timestamp));
 
         gchar *end;
         guint64 time = g_ascii_strtoll(timestamp, &end, 10);
