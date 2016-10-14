@@ -236,20 +236,6 @@ _eventd_journald_new_entry(gint fd, GIOCondition events, EventdPluginContext *co
     for (;;) {
         int ret;
 
-        ret = sd_journal_process(context->journal);
-        switch (ret) {
-            case SD_JOURNAL_NOP:
-                return G_SOURCE_CONTINUE;
-            case SD_JOURNAL_APPEND:
-                break;
-            case SD_JOURNAL_INVALIDATE:
-                /* FIXME: correct? */
-                break;
-            default:
-                g_warning("unhandled process return value: %d; forging ahead", ret);
-                break;
-        }
-
         ret = sd_journal_next(context->journal);
         if (!ret)
             break;
