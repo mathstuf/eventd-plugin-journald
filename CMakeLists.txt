@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.7.0)
 
 set(project "eventd-plugin-journald")
 project("${project}" C)

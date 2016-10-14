@@ -1,7 +1,7 @@
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(Eventd REQUIRED libeventd>=0.11)
-pkg_check_modules(EventdPlugin REQUIRED libeventd-plugin>=0.11)
-pkg_check_modules(SystemdJournal REQUIRED libsystemd-journal)
+pkg_check_modules(Eventd REQUIRED libeventd>=0.11 IMPORTED_TARGET)
+pkg_check_modules(EventdPlugin REQUIRED libeventd-plugin>=0.11 IMPORTED_TARGET)
+pkg_check_modules(SystemdJournal REQUIRED libsystemd-journal IMPORTED_TARGET)
 
 if (NOT COMMAND pkg_get_variable)
     function (pkg_get_variable out pkg var)
@@ -25,11 +25,6 @@ find_library(EventdHelpers_LIBRARY eventd-helpers
     PATHS ${eventd_pkglibdir}
     NO_DEFAULT_PATH)
 
-include_directories(SYSTEM
-    ${Eventd_INCLUDE_DIRS}
-    ${EventdPlugin_INCLUDE_DIRS}
-    ${SystemdJournal_INCLUDE_DIRS})
-
 add_library(journald MODULE
     journald.c)
 target_compile_definitions(journald
@@ -37,10 +32,9 @@ target_compile_definitions(journald
         -DG_LOG_DOMAIN="journald")
 target_link_libraries(journald
     PRIVATE
-        ${Eventd_LIBRARIES}
-        ${EventdPlugin_LIBRARIES}
-        ${EventdHelpers_LIBRARY}
-        ${SystemdJournal_LIBRARIES})
+        PkgConfig::Eventd
+        PkgConfig::EventdPlugin
+        PkgConfig::SystemdJournal)
 set_target_properties(journald
     PROPERTIES
         PREFIX    ""
