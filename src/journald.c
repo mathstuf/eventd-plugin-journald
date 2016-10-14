@@ -146,10 +146,10 @@ _eventd_journald_handle_entry(EventdPluginContext *context)
     sd_read_field("_SOURCE_REALTIME_TIMESTAMP", timestamp, FALSE);
 
     event = eventd_event_new("journal", kind);
-    eventd_event_add_data(event, g_strdup("priority"), g_strdup(priority));
-    eventd_event_add_data(event, g_strdup("message"), g_strdup(message));
-    eventd_event_add_data(event, g_strdup("message_id"), g_strdup(message_id ? message_id : ""));
-    eventd_event_add_data(event, g_strdup("hostname"), g_strdup(hostname));
+    eventd_event_add_data_string(event, g_strdup("priority"), g_strdup(priority));
+    eventd_event_add_data_string(event, g_strdup("message"), g_strdup(message));
+    eventd_event_add_data_string(event, g_strdup("message_id"), g_strdup(message_id ? message_id : ""));
+    eventd_event_add_data_string(event, g_strdup("hostname"), g_strdup(hostname));
     if (timestamp) {
         eventd_event_add_data(event, g_strdup("timestamp"), g_strdup(timestamp));
 
@@ -162,12 +162,12 @@ _eventd_journald_handle_entry(EventdPluginContext *context)
             if (dt) {
                 gchar *time_format = g_date_time_format(dt, "%F %T");
 
-                eventd_event_add_data(event, g_strdup("timestamp_string"), time_format);
+                eventd_event_add_data_string(event, g_strdup("timestamp_string"), time_format);
 
                 GDateTime *ldt = g_date_time_to_local(dt);
                 gchar *local_time_format = g_date_time_format(ldt, "%F %T");
 
-                eventd_event_add_data(event, g_strdup("timestamp_string_local"), local_time_format);
+                eventd_event_add_data_string(event, g_strdup("timestamp_string_local"), local_time_format);
 
                 g_date_time_unref(dt);
             }
@@ -178,13 +178,13 @@ _eventd_journald_handle_entry(EventdPluginContext *context)
         case EVENTD_JOURNALD_EVENT_ERROR:
             sd_read_field("_SYSTEMD_USER_UNIT", unit, FALSE);
             if (unit) {
-                eventd_event_add_data(event, g_strdup("unit"), g_strdup(unit));
-                eventd_event_add_data(event, g_strdup("unit_kind"), g_strdup("user"));
+                eventd_event_add_data_string(event, g_strdup("unit"), g_strdup(unit));
+                eventd_event_add_data_string(event, g_strdup("unit_kind"), g_strdup("user"));
             } else {
                 sd_read_field("_SYSTEMD_UNIT", unit, TRUE);
                 if (unit) {
-                    eventd_event_add_data(event, g_strdup("unit"), g_strdup(unit));
-                    eventd_event_add_data(event, g_strdup("unit_kind"), g_strdup("system"));
+                    eventd_event_add_data_string(event, g_strdup("unit"), g_strdup(unit));
+                    eventd_event_add_data_string(event, g_strdup("unit_kind"), g_strdup("system"));
                 }
             }
 
@@ -194,9 +194,9 @@ _eventd_journald_handle_entry(EventdPluginContext *context)
             sd_read_field("USER_UNIT", unit, TRUE);
             sd_read_field("RESULT", result, FALSE);
 
-            eventd_event_add_data(event, g_strdup("unit"), g_strdup(unit));
-            eventd_event_add_data(event, g_strdup("result"), g_strdup(result ? result : ""));
-            eventd_event_add_data(event, g_strdup("unit_kind"), g_strdup(g_strcmp0(pid, "1") ? "user" : "system"));
+            eventd_event_add_data_string(event, g_strdup("unit"), g_strdup(unit));
+            eventd_event_add_data_string(event, g_strdup("result"), g_strdup(result ? result : ""));
+            eventd_event_add_data_string(event, g_strdup("unit_kind"), g_strdup(g_strcmp0(pid, "1") ? "user" : "system"));
 
             break;
         case 0:

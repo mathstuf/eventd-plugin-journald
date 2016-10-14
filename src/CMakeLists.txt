@@ -1,6 +1,6 @@
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(Eventd REQUIRED libeventd>=0.11 IMPORTED_TARGET)
-pkg_check_modules(EventdPlugin REQUIRED libeventd-plugin>=0.11 IMPORTED_TARGET)
+pkg_check_modules(Eventd REQUIRED libeventd>=0.19 IMPORTED_TARGET)
+pkg_check_modules(EventdPlugin REQUIRED libeventd-plugin>=0.19 IMPORTED_TARGET)
 pkg_check_modules(SystemdJournal REQUIRED libsystemd-journal IMPORTED_TARGET)
 
 if (NOT COMMAND pkg_get_variable)
