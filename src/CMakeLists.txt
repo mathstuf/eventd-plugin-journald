@@ -1,7 +1,7 @@
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(Eventd REQUIRED libeventd>=0.19 IMPORTED_TARGET)
 pkg_check_modules(EventdPlugin REQUIRED libeventd-plugin>=0.19 IMPORTED_TARGET)
-pkg_check_modules(SystemdJournal REQUIRED libsystemd-journal IMPORTED_TARGET)
+pkg_check_modules(Systemd REQUIRED libsystemd IMPORTED_TARGET)
 
 if (NOT COMMAND pkg_get_variable)
     function (pkg_get_variable out pkg var)
@@ -34,7 +34,7 @@ target_link_libraries(journald
     PRIVATE
         PkgConfig::Eventd
         PkgConfig::EventdPlugin
-        PkgConfig::SystemdJournal)
+        PkgConfig::Systemd)
 set_target_properties(journald
     PROPERTIES
         PREFIX    ""
