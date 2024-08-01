@@ -8,8 +8,8 @@ set("${project}_version_minor" 13)
 set("${project}_version_patch" 0)
 set("${project}_version" "${${project}_version_major}.${${project}_version_minor}.${${project}_version_patch}")
 
-set(CMAKE_C_FLAGS
-    "${CMAKE_C_FLAGS} -fvisibility=hidden -Wall")
+set(CMAKE_C_VISIBILITY_PRESET "hidden")
+string(APPEND CMAKE_C_FLAGS " -Wall")
 
 add_subdirectory(man)
 add_subdirectory(src)
