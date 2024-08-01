@@ -251,7 +251,7 @@ _eventd_journald_new_entry(gint fd, GIOCondition events, EventdPluginContext *co
     }
 
     for (;;) {
-        ret = sd_journal_next(context->journal);
+        ret = sd_journal_step_one(context->journal, 1);
         if (!ret)
             break;
         if (ret < 0) {
